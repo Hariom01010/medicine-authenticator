@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import axios from "axios"
+import api from "../lib/api"
 import { ShieldCheck, ShieldAlert, Link as LinkIcon, Clock, Box } from "lucide-react"
+
+import { useAuth } from "../lib/AuthContext"
 
 export default function BatchDetails() {
   const { id } = useParams()
+  const { user } = useAuth()
   const [batch, setBatch] = useState(null)
   const [isValid, setIsValid] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -17,8 +20,8 @@ export default function BatchDetails() {
     setLoading(true)
     try {
       const [batchRes, verifyRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/batches/${id}`),
-        axios.get(`http://localhost:5000/api/batches/${id}/verify`)
+        api.get(`/batches/${id}`),
+        api.get(`/batches/${id}/verify`)
       ])
       setBatch(batchRes.data.data)
       setIsValid(verifyRes.data.isValid)
@@ -34,34 +37,46 @@ export default function BatchDetails() {
 
   return (
     <div className="max-w-4xl mx-auto mt-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 bg-card p-6 rounded-xl border shadow-lg border-primary/20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 bg-card p-6 rounded-xl border shadow-sm border-border">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-1">{batch.medicineName}</h1>
-          <p className="text-muted-foreground font-mono text-sm border-l-2 pl-2 border-primary">Batch ID: {batch._id}</p>
-          <p className="inline-flex mt-3 items-center text-xs font-semibold bg-secondary px-3 py-1.5 rounded-full gap-1 text-secondary-foreground shadow-inner">
-            <Box className="w-3 h-3" /> Mined by: {batch.manufacturer}
-          </p>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">{batch.medicineName}</h1>
+            <span className={`status-badge ${
+                batch.status === 'SOLD' ? 'bg-success' : 'bg-info'
+            }`}>
+                {batch.status}
+            </span>
+          </div>
+          <p className="text-muted-foreground font-mono text-sm border-l-2 pl-2 border-primary/30">Batch ID: {batch._id}</p>
+          <div className="flex gap-2 mt-3">
+            <p className="inline-flex items-center text-xs font-semibold bg-muted px-3 py-1.5 rounded-full gap-1 text-muted-foreground">
+                <Box className="w-3 h-3" /> Mined by: {batch.manufacturer}
+            </p>
+          </div>
         </div>
         <div className="flex flex-col items-end gap-2">
           {isValid ? (
-            <div className="bg-green-500/10 text-green-500 border border-green-500/30 px-5 py-2.5 rounded-full flex items-center gap-2 font-bold shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-              <ShieldCheck className="w-5 h-5"/> Chain Cryptographically Verified
+            <div className="bg-success text-white px-5 py-2.5 rounded-full flex items-center gap-2 font-bold shadow-md">
+              <ShieldCheck className="w-5 h-5"/> Verified Authentic
             </div>
           ) : (
-            <div className="bg-red-500/10 text-red-500 border border-red-500/30 px-5 py-2.5 rounded-full flex items-center gap-2 font-bold shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-              <ShieldAlert className="w-5 h-5"/> Warning: Chain Tampered!
+            <div className="bg-destructive text-white px-5 py-2.5 rounded-full flex items-center gap-2 font-bold shadow-md">
+              <ShieldAlert className="w-5 h-5"/> Tampering Detected!
             </div>
           )}
           <div className="flex items-center gap-4 mt-2">
-            <button onClick={async () => {
-              if(confirm("Are you sure you want to silently edit the database block?")) {
-                await axios.post(`http://localhost:5000/api/batches/${id}/tamper`);
-                fetchBatchData(); // Refresh to catch the tamper
-              }
-            }} className="text-xs text-red-500 hover:text-red-400 font-bold uppercase tracking-widest border border-red-500/20 bg-red-500/5 px-3 py-1 rounded">
-               Simulate Hack
-            </button>
-            <span className="text-xs text-muted-foreground font-mono font-medium">Height: {batch.chain.length} Blocks</span>
+            {user?.role === 'Admin' && (
+                <button onClick={async () => {
+                if(confirm("Are you sure you want to silently edit the database block?")) {
+                    const config = { headers: { Authorization: `Bearer ${token}` } };
+                    await axios.post(`http://localhost:5000/api/batches/${id}/tamper`, {}, config);
+                    fetchBatchData(); 
+                }
+                }} className="text-xs text-destructive hover:underline font-bold uppercase tracking-widest">
+                Simulate Hack
+                </button>
+            )}
+            <span className="text-xs text-muted-foreground font-mono font-medium">{batch.chain.length} Ledger Records</span>
           </div>
         </div>
       </div>

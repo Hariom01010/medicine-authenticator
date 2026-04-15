@@ -13,6 +13,21 @@ const blockSchema = new mongoose.Schema({
 const batchSchema = new mongoose.Schema({
     medicineName: { type: String, required: true },
     manufacturer: { type: String, required: true },
+    status: {
+        type: String,
+        enum: ['CREATED', 'IN_TRANSIT', 'WAREHOUSE', 'PHARMACY', 'SOLD', 'RECALLED'],
+        default: 'CREATED'
+    },
+    creator: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    organization: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Organization',
+        required: [true, 'Batch must be associated with an organization']
+    },
     // An independent ledger timeline for this exact medicine batch
     chain: [blockSchema]
 }, { timestamps: true });

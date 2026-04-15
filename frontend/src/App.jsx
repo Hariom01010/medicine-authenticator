@@ -1,38 +1,122 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
-import { ShieldCheck } from "lucide-react"
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/AuthContext';
+import Navbar from './components/Navbar';
 
-import Home from "./pages/Home"
-import CreateBatch from "./pages/CreateBatch"
-import UpdateBatch from "./pages/UpdateBatch"
-import BatchDetails from "./pages/BatchDetails"
+// Import Pages
+import Home from './pages/Home';
+import CreateBatch from './pages/CreateBatch';
+import UpdateBatch from './pages/UpdateBatch';
+import BatchDetails from './pages/BatchDetails';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
+import Landing from './pages/Landing';
+import AdminOrgs from './pages/AdminOrgs';
+import AuditDashboard from './pages/AuditDashboard';
+
+// Protected Route Wrapper
+const ProtectedRoute = ({ children, allowedRoles }) => {
+    const { user, loading } = useAuth();
+
+    if (loading) return <div>Loading Security Protocols...</div>;
+    
+    if (!user) {
+        return <Navigate to="/login" />;
+    }
+
+    if (allowedRoles && !allowedRoles.includes(user.role) && user.role !== 'Admin') {
+        return <div className="p-8 text-center">
+            <h2 className="text-2xl font-bold text-red-500">Access Denied</h2>
+            <p>Your current role ({user.role}) does not have permission to access this operation.</p>
+        </div>;
+    }
+
+    return children;
+};
+
+// Redirect logged in users away from public landing pages
+const AuthRedirect = ({ children }) => {
+    const { user, loading } = useAuth();
+    if (loading) return null;
+    if (user) return <Navigate to="/dashboard" />;
+    return children;
+};
 
 function App() {
-  return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <header className="border-b border-border bg-card p-4 flex items-center justify-between sticky top-0 z-10">
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-primary">
-            <ShieldCheck className="h-8 w-8" />
-            MediChain
-          </Link>
-          <nav className="flex gap-6">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">Verify Batch</Link>
-            <Link to="/create" className="text-sm font-medium hover:text-primary transition-colors">Create Batch</Link>
-            <Link to="/update" className="text-sm font-medium hover:text-primary transition-colors">Push Update</Link>
-          </nav>
-        </header>
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <div className="min-h-screen bg-background text-foreground flex flex-col">
+                    <Navbar />
+                    <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={
+                                <AuthRedirect>
+                                    <Landing />
+                                </AuthRedirect>
+                            } />
+                            <Route path="/batch/:id" element={<BatchDetails />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
 
-        <main className="flex-1 p-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/create" element={<CreateBatch />} />
-            <Route path="/update" element={<UpdateBatch />} />
-            <Route path="/batch/:id" element={<BatchDetails />} />
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
-  )
+                            {/* Role-Protected Routes */}
+                            <Route 
+                                path="/dashboard" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Dashboard />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/admin/orgs" 
+                                element={
+                                    <ProtectedRoute allowedRoles={['Admin']}>
+                                        <AdminOrgs />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/audit" 
+                                element={
+                                    <ProtectedRoute allowedRoles={['Regulator', 'Admin']}>
+                                        <AuditDashboard />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/create" 
+                                element={
+                                    <ProtectedRoute allowedRoles={['Manufacturer']}>
+                                        <CreateBatch />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/update" 
+                                element={
+                                    <ProtectedRoute allowedRoles={['Transporter', 'Warehouse', 'Pharmacist']}>
+                                        <UpdateBatch />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/profile" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Profile />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                        </Routes>
+                    </main>
+                </div>
+            </BrowserRouter>
+        </AuthProvider>
+    );
 }
 
-export default App
+export default App;

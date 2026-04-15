@@ -17,14 +17,14 @@ export default function Home() {
 
   return (
     <div className="max-w-xl mx-auto mt-20 relative">
-      <div className="absolute inset-0 -z-10 bg-primary/10 blur-[100px] rounded-full"></div>
-      <Card className="border-primary/20 shadow-2xl shadow-primary/10 bg-card/80 backdrop-blur-md">
+      <div className="absolute inset-0 -z-10 bg-primary/5 blur-[100px] rounded-full"></div>
+      <Card className="border-border shadow-xl bg-card border">
         <CardHeader className="pb-4">
           <CardTitle className="text-center text-4xl mb-2 font-bold tracking-tight text-foreground">
             Verify Medicine <span className="text-primary">Authenticity</span>
           </CardTitle>
           <p className="text-center text-muted-foreground text-sm">
-            Enter the unique Batch ID provided on your medical package to verify its cryptographic timeline safely.
+            Enter the unique Batch ID provided on your medical package to verify its cryptographic timeline.
           </p>
         </CardHeader>
         <CardContent>
@@ -33,9 +33,9 @@ export default function Home() {
               placeholder="e.g. 64b73b22..." 
               value={batchId} 
               onChange={(e) => setBatchId(e.target.value)}
-              className="text-center text-lg h-14 bg-background/50 focus:bg-background transition-colors"
+              className="text-center text-lg h-14 bg-muted/30 focus:bg-background transition-all border-border shadow-inner"
             />
-            <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold">Validate Chain</Button>
+            <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold shadow-md hover:shadow-lg transition-all">Validate Chain</Button>
           </form>
         </CardContent>
       </Card>

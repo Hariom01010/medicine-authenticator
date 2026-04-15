@@ -1,21 +1,23 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
-import { Copy, Check, ExternalLink } from "lucide-react"
+import api from "../lib/api"
+import { Copy, Check, ExternalLink, Download, Printer, RefreshCw, CheckCircle2 } from "lucide-react"
+import { QRCodeCanvas } from "qrcode.react"
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+
+import { useAuth } from "../lib/AuthContext"
 
 export default function CreateBatch() {
+  const { user } = useAuth()
   const [medicineName, setMedicineName] = useState("")
   const [manufacturer, setManufacturer] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // Modal State
-  const [showModal, setShowModal] = useState(false)
+  // Success State
   const [createdBatchId, setCreatedBatchId] = useState("")
   const [copied, setCopied] = useState(false)
 
@@ -23,13 +25,12 @@ export default function CreateBatch() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await axios.post("http://localhost:5000/api/batches", {
+      const res = await api.post("/batches", {
         medicineName,
         manufacturer
       })
       
       setCreatedBatchId(res.data.data._id)
-      setShowModal(true) // Show the modal instead of alert
       setMedicineName("")
       setManufacturer("")
     } catch (err) {
@@ -45,13 +46,94 @@ export default function CreateBatch() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const proceedToTimeline = () => {
-    navigate(`/batch/${createdBatchId}`)
+  const downloadQR = () => {
+    const canvas = document.getElementById("batch-qr")
+    if (canvas) {
+      const url = canvas.toDataURL("image/png")
+      const link = document.createElement("a")
+      link.download = `QR_Batch_${createdBatchId}.png`
+      link.href = url
+      link.click()
+    }
+  }
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  const resetForm = () => {
+    setCreatedBatchId("")
+  }
+
+  if (createdBatchId) {
+    const verificationUrl = `${window.location.origin}/batch/${createdBatchId}`
+
+    return (
+      <div className="max-w-md mx-auto mt-10 space-y-6 animate-in zoom-in-95 duration-500 print:shadow-none print:mt-0 p-4">
+        <Card className="border-green-500/30 border-2 shadow-2xl bg-card print:border-none">
+          <CardHeader className="text-center pb-4">
+            <div className="flex justify-center mb-4 print:hidden">
+              <div className="bg-green-500/10 p-3 rounded-full">
+                <CheckCircle2 className="w-12 h-12 text-green-500" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-extrabold tracking-tight">Genesis Block Mined!</CardTitle>
+            <p className="text-muted-foreground text-sm">Medicine identity permanently etched on the ledger.</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-slate-50 p-8 rounded-2xl flex flex-col items-center border border-border group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                 <button onClick={downloadQR} className="p-2 hover:bg-slate-200 rounded-lg" title="Save QR">
+                    <Download className="w-4 h-4 text-slate-800" />
+                 </button>
+              </div>
+              <QRCodeCanvas 
+                id="batch-qr"
+                value={verificationUrl}
+                size={220}
+                level="H"
+                includeMargin={true}
+                className="bg-white p-2 rounded-xl shadow-lg border border-slate-200"
+              />
+              <div className="mt-6 flex items-center justify-between w-full bg-white px-4 py-2 rounded-lg border border-slate-200 font-mono text-[10px] break-all">
+                 <span className="text-slate-500 truncate mr-2">{createdBatchId}</span>
+                 <button onClick={handleCopy} className="ml-auto text-primary">
+                    {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                 </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 print:hidden">
+              <Button onClick={downloadQR} variant="outline" className="h-11 font-bold shadow-sm gap-2">
+                <Download className="w-4 h-4" /> Save Tag
+              </Button>
+              <Button onClick={handlePrint} variant="outline" className="h-11 font-bold shadow-sm gap-2">
+                <Printer className="w-4 h-4" /> Print Label
+              </Button>
+            </div>
+
+            <div className="space-y-2 pt-2 print:hidden">
+              <Button onClick={() => navigate(`/batch/${createdBatchId}`)} className="w-full h-12 font-bold shadow-md gap-2">
+                View Protocol Timeline <ExternalLink className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" className="w-full text-muted-foreground gap-2" onClick={resetForm}>
+                <RefreshCw className="w-4 h-4" /> Record New Batch
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl flex gap-3 text-[13px] text-primary/80 print:hidden">
+            <div className="pt-0.5 font-bold">💡</div>
+            <p>Scanning this QR code will bring anyone directly to the live verification timeline for this specific medicine batch.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="max-w-md mx-auto mt-10">
-      <Card>
+      <Card className="border-border shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl text-primary font-bold">Mint New Batch</CardTitle>
           <p className="text-muted-foreground text-sm">Initialize a cryptographically secured medicine batch on the ledger.</p>
@@ -66,37 +148,12 @@ export default function CreateBatch() {
               <label className="text-sm font-medium mb-1 block text-foreground">Manufacturer Name</label>
               <Input required value={manufacturer} onChange={e => setManufacturer(e.target.value)} placeholder="e.g. PharmaCorp Inc." />
             </div>
-            <Button disabled={loading} type="submit" className="mt-2 h-12 text-md font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">
+            <Button disabled={loading} type="submit" className="mt-2 h-12 text-md font-bold shadow-md hover:shadow-lg transition-all">
               {loading ? "Mining Genesis Block..." : "Create Medicine Batch"}
             </Button>
           </form>
         </CardContent>
       </Card>
-
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogHeader>
-          <DialogTitle>Batch Successfully Mined! 🎉</DialogTitle>
-          <DialogDescription>
-            Your medicine batch is now firmly secured on the blockchain. Please copy the Batch ID below to attach future tracking updates.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="flex items-center space-x-2 my-4">
-          <Input readOnly value={createdBatchId} className="font-mono bg-background text-primary" />
-          <Button size="icon" onClick={handleCopy} className="shrink-0" variant="secondary">
-            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-          </Button>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-6">
-          <Button variant="outline" onClick={() => setShowModal(false)}>
-            Close
-          </Button>
-          <Button onClick={proceedToTimeline} className="gap-2">
-            View Protocol Timeline <ExternalLink className="h-4 w-4" />
-          </Button>
-        </div>
-      </Dialog>
     </div>
   )
 }

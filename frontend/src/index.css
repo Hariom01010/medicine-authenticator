@@ -35,26 +35,26 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --radius: 0.5rem;
+    --background: 210 20% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
   }
 }
 
@@ -62,7 +62,72 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
+  html, body {
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
   }
 }
+
+/* Premium UI Styles */
+.auth-container {
+  @apply flex items-center justify-center min-h-[80vh];
+}
+
+.auth-card {
+  @apply bg-card border border-border p-8 rounded-2xl shadow-xl w-full max-w-md transition-all;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-subtitle {
+  @apply text-muted-foreground text-center mb-8;
+}
+
+.auth-card h2 {
+  @apply text-3xl font-bold text-center mb-2 text-foreground;
+}
+
+.form-group {
+  @apply mb-5 flex flex-col gap-1.5;
+}
+
+.form-group label {
+  @apply text-sm font-semibold text-foreground/70;
+}
+
+.form-group input, .auth-select {
+  @apply bg-background border border-border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all;
+}
+
+.auth-button {
+  @apply w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg mt-4 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-95 shadow-sm;
+}
+
+.auth-footer {
+  @apply text-center text-sm text-muted-foreground mt-8;
+}
+
+.auth-footer a {
+  @apply text-primary font-bold hover:underline;
+}
+
+.error-alert {
+  @apply bg-red-500/10 border border-red-500/20 text-red-600 p-3 rounded-lg text-sm mb-6 text-center font-medium;
+}
+
+.form-help {
+  @apply text-[10px] text-muted-foreground italic mt-1;
+}
+
+/* State Utilities */
+.status-badge {
+    @apply text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all;
+}
+
+.bg-success { @apply bg-green-500/10 text-green-600 border-green-500/20; }
+.bg-info { @apply bg-blue-500/10 text-blue-600 border-blue-500/20; }
+.bg-warning { @apply bg-amber-500/10 text-amber-600 border-amber-500/20; }
+.bg-danger { @apply bg-red-500/10 text-red-600 border-red-500/20; }
