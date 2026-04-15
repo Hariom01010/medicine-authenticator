@@ -17,16 +17,24 @@ const PORT = process.env.PORT || 5000;
 
 // Hardened CORS for Production
 const allowedOrigins = [
-  'http://localhost:5173', // Vite local
-  process.env.FRONTEND_URL  // Production Vercel URL
-].filter(Boolean);
+  'http://localhost:5173', 
+  'http://localhost:5000',
+  'https://medicine-authenticator.vercel.app', // Explicitly Whitelisted
+  process.env.FRONTEND_URL
+].filter(Boolean).map(url => url.replace(/\/$/, "")); 
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true);
+    
+    const normalizedOrigin = origin.replace(/\/$/, "");
+    const isVercelDomain = normalizedOrigin.endsWith('.vercel.app');
+
+    if (allowedOrigins.includes(normalizedOrigin) || isVercelDomain) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked by CORS'));
+      console.error(`Blocked by CORS policy: ${origin}`);
+      callback(new Error('CORS Error: Origin not allowed'));
     }
   },
   credentials: true
