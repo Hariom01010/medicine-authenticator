@@ -19,7 +19,6 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   'http://localhost:5173', 
   'http://localhost:5000',
-  'https://medicine-authenticator.vercel.app', // Explicitly Whitelisted
   process.env.FRONTEND_URL
 ].filter(Boolean).map(url => url.replace(/\/$/, "")); 
 
