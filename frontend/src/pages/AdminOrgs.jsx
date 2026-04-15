@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Building2, Mail, MapPin, ListFilter } from 'lucide-react';
 
 const AdminOrgs = () => {
-    const { token } = useAuth();
+    const { user } = useAuth();
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({

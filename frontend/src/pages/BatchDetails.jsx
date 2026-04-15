@@ -68,8 +68,7 @@ export default function BatchDetails() {
             {user?.role === 'Admin' && (
                 <button onClick={async () => {
                 if(confirm("Are you sure you want to silently edit the database block?")) {
-                    const config = { headers: { Authorization: `Bearer ${token}` } };
-                    await axios.post(`http://localhost:5000/api/batches/${id}/tamper`, {}, config);
+                    await api.post(`/batches/${id}/tamper`, {});
                     fetchBatchData(); 
                 }
                 }} className="text-xs text-destructive hover:underline font-bold uppercase tracking-widest">

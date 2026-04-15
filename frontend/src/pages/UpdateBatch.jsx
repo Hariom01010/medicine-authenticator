@@ -45,10 +45,6 @@ export default function UpdateBatch() {
     e.preventDefault()
     setLoading(true)
     try {
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-      
       const payload = {
         updateData: {
           location,
@@ -58,7 +54,7 @@ export default function UpdateBatch() {
         nextStatus
       }
 
-      await axios.post(`http://localhost:5000/api/batches/${batchId}/update`, payload, config)
+      await api.post(`/batches/${batchId}/update`, payload)
       navigate(`/batch/${batchId}`)
     } catch (err) {
       alert("Error: " + (err.response?.data?.message || err.message))

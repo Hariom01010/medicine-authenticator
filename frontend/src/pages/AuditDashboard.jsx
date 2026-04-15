@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { Link } from 'react-router-dom';
 import { 
@@ -18,7 +18,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const AuditDashboard = () => {
-    const { token } = useAuth();
+    const { user } = useAuth();
     const [batches, setBatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [recallLoading, setRecallLoading] = useState(null);
